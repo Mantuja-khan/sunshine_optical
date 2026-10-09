@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- Sun Rays in Royal Blue -->
+  <circle cx="32" cy="18" r="4" fill="#2563eb"/>
+  <path d="M32 8V12M32 24V28M22 18H26M38 18H42M24.9 10.9L27.7 13.7M36.3 22.3L39.1 25.1M39.1 10.9L36.3 13.7M27.7 22.3L24.9 25.1" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+  <!-- Eyeglasses -->
+  <circle cx="21" cy="40" r="10" stroke="#ffffff" stroke-width="3.5" fill="#1e293b"/>
+  <circle cx="43" cy="40" r="10" stroke="#ffffff" stroke-width="3.5" fill="#1e293b"/>
+  <!-- Bridge -->
+  <path d="M31 38C31 35.5 33 35.5 33 38" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Temples -->
+  <path d="M11 38H6M53 38H58" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+</svg>
