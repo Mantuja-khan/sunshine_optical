@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, CircleCheck, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, CircleCheck, ShoppingBag, ArrowRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import sunshineLogo from '@/assets/sunshine-logo.png';
 import workSmarter from '@/assets/work-smarter.png';
@@ -27,6 +27,7 @@ function ContactPage() {
     message: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,9 +54,89 @@ function ContactPage() {
               <ShoppingBag className="w-4 h-4" />
               <span>Catalog (₹)</span>
             </Link>
+            <button
+              className="header-menu-toggle"
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              aria-label={isMobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              aria-expanded={isMobileMenuOpen}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation Drawer Overlay */}
+      <div
+        className={`mobile-nav-backdrop ${isMobileMenuOpen ? 'is-open' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+        aria-hidden={!isMobileMenuOpen}
+      />
+      <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'is-open' : ''}`}>
+        <div className="mobile-nav-header">
+          <img src={sunshineLogo} alt="Sunshine Opticals" className="mobile-nav-logo" />
+          <button
+            className="mobile-nav-close"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="mobile-nav-links">
+          <Link
+            to="/"
+            className="mobile-nav-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span>Home</span>
+            <ArrowRight className="w-4 h-4 text-blue-500" />
+          </Link>
+          <Link
+            to="/#about-section"
+            className="mobile-nav-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span>About Us</span>
+            <ArrowRight className="w-4 h-4 text-blue-500" />
+          </Link>
+          <Link
+            to="/#products-section"
+            className="mobile-nav-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span>Products</span>
+            <ArrowRight className="w-4 h-4 text-blue-500" />
+          </Link>
+          <Link
+            to="/#why-choose-us"
+            className="mobile-nav-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span>Our Services</span>
+            <ArrowRight className="w-4 h-4 text-blue-500" />
+          </Link>
+          <Link
+            to="/contact"
+            className="mobile-nav-link active"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span>Contact Us</span>
+            <ArrowRight className="w-4 h-4 text-blue-500" />
+          </Link>
+        </div>
+        <div className="mobile-nav-footer">
+          <p>Sunshine Opticals — Wholesale & Retail Optical Accessories across India</p>
+          <Link
+            to="/#products-section"
+            className="shop-button w-full"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Explore Catalog
+          </Link>
+        </div>
+      </div>
 
       {/* 2. Top Hero CTA Section with Background Image */}
       <section className="contact-hero">

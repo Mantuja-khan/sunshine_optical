@@ -18,6 +18,7 @@ import {
   Check,
   CreditCard,
   MessageCircle,
+  Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -489,6 +490,7 @@ function Index() {
   // Cart & Drawer State
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [drawerNotice, setDrawerNotice] = useState('');
 
   const [toasts, setToasts] = useState<ToastNotice[]>([]);
@@ -497,7 +499,7 @@ function Index() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSlide(s => (s + 1) % heroSlides.length), 5200);
+    const timer = setTimeout(() => setSlide(s => (s + 1) % heroSlides.length), 8000);
     return () => clearTimeout(timer);
   }, [slide]);
 
@@ -660,33 +662,56 @@ function Index() {
         ))}
       </div>
 
-      {/* 1. Hero Section */}
+      {/* 1. Hero Section with Cinematic Scale-Out (108% to 100% over 8s) */}
       <section className="main-hero">
-        <div className="hero-slides">
-          {heroSlides.map((s, i) => (
-            <img
-              key={`${s.label}-${i === slide ? 'active' : 'inactive'}`}
-              className={`cover-image hero-slide ${i === slide ? 'is-active' : ''}`}
-              src={s.image}
-              alt={i === slide ? s.alt : ''}
-              aria-hidden={i !== slide}
-              style={{
-                animation: i === slide ? 'hero-scale-zoom 6.8s cubic-bezier(0.25, 1, 0.5, 1) forwards' : 'none',
-                transformOrigin: 'center center',
-                willChange: 'transform, opacity',
-              }}
-            />
-          ))}
+        <style>{`
+    @keyframes cinematic-hero-zoom-out {
+      0%   { transform: scale(1.12) translate3d(0, 0, 0); }
+      100% { transform: scale(1.0)  translate3d(0, 0, 0); }
+    }
+  `}</style>
+
+        <div className="hero-slides" style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#000' }}>
+          {heroSlides.map((s, i) => {
+            const isActive = i === slide;
+            return (
+              <img
+                key={s.label}  /* stable key: remount nahi hoga, fade smooth chalega */
+                className={`cover-image hero-slide ${isActive ? 'is-active' : ''}`}
+                src={s.image}
+                alt={isActive ? s.alt : ''}
+                aria-hidden={!isActive}
+                decoding="async"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  opacity: isActive ? 1 : 0,
+                  transition: 'opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transformOrigin: 'center center',
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                  pointerEvents: 'none',
+                  zIndex: isActive ? 2 : 1,
+                  /* animation ko inactive pe bhi chalu rakho, taaki fade-out ke time image jump na kare */
+                  animation: 'cinematic-hero-zoom-out 10s cubic-bezier(0.22, 0.61, 0.36, 1) forwards',
+                  animationPlayState: isActive ? 'running' : 'paused',
+                }}
+              />
+            );
+          })}
         </div>
 
-        {/* Transparent Top Header (Centered 5 Navigation Buttons) */}
+        {/* Transparent Top Header (Desktop: Centered Menu; Mobile: Bag on Left of Toggle, Toggle on Far Right) */}
         <header className="site-header">
           <div className="site-header-inner">
             <Link to="/" className="site-logo" aria-label="Sunshine Opticals Home">
               <img src={sunshineLogo} alt="Sunshine Opticals" className="site-logo-img" />
             </Link>
 
-            {/* Centered Navigation Menu */}
+            {/* Centered Navigation Menu (Desktop) */}
             <nav className="site-nav" aria-label="Main menu">
               <Link to="/">Home</Link>
               <a href="#about-section">About Us</a>
@@ -695,6 +720,7 @@ function Index() {
               <Link to="/contact">Contact Us</Link>
             </nav>
 
+            {/* Header Actions: Bag Button on Left, Toggle Button on Far Right */}
             <div className="header-actions">
               <button
                 className="header-bag-button"
@@ -705,9 +731,92 @@ function Index() {
                 <span>Bag</span>
                 <span className={`bag-badge ${badgeBounced ? 'bounce' : ''}`}>{totalItemsCount}</span>
               </button>
+
+              <button
+                className="header-menu-toggle"
+                onClick={() => setIsMobileMenuOpen(prev => !prev)}
+                aria-label={isMobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+                aria-expanded={isMobileMenuOpen}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
         </header>
+
+        {/* Mobile Navigation Drawer Overlay */}
+        <div
+          className={`mobile-nav-backdrop ${isMobileMenuOpen ? 'is-open' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden={!isMobileMenuOpen}
+        />
+        <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'is-open' : ''}`}>
+          <div className="mobile-nav-header">
+            <img src={sunshineLogo} alt="Sunshine Opticals" className="mobile-nav-logo" />
+            <button
+              className="mobile-nav-close"
+              onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close navigation menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="mobile-nav-links">
+            <Link
+              to="/"
+              className="mobile-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>Home</span>
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            </Link>
+            <a
+              href="#about-section"
+              className="mobile-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>About Us</span>
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            </a>
+            <a
+              href="#products-section"
+              className="mobile-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>Products</span>
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            </a>
+            <a
+              href="#why-choose-us"
+              className="mobile-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>Our Services</span>
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            </a>
+            <Link
+              to="/contact"
+              className="mobile-nav-link"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span>Contact Us</span>
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            </Link>
+          </div>
+          <div className="mobile-nav-footer">
+            <p>Sunshine Opticals — Wholesale & Retail Optical Accessories across India</p>
+            <Button
+              className="shop-button w-full"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsDrawerOpen(true);
+              }}
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              View Bag ({totalItemsCount})
+            </Button>
+          </div>
+        </div>
 
         {/* Hero Content (When 2nd slide is active, business font is black as requested) */}
         <div className={`hero-inner ${isSlideTwo ? 'slide-2-active on-photo' : ''}`}>
@@ -751,12 +860,9 @@ function Index() {
         <section className="categories-section" id="categories-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow" style={{ color: '#2563eb' }}>Explore collections</p>
               <AnimatedHeading tag="h2">Optical Categories</AnimatedHeading>
             </div>
-            <Button variant="text" className="shop-text-button" onClick={() => scrollToProducts('All Products')}>
-              View All Products <ArrowRight />
-            </Button>
+
           </div>
 
           <div className="circular-categories-grid">
@@ -817,16 +923,12 @@ function Index() {
         <section className="products-section" id="products-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow" style={{ color: '#2563eb' }}>Curated items</p>
               <AnimatedHeading tag="h2">{selectedCategory}</AnimatedHeading>
             </div>
 
             {/* Category Dropdown Select */}
             <div className="products-controls-row">
               <div className="category-dropdown-container">
-                <label htmlFor="category-select" className="category-dropdown-label">
-                  Category:
-                </label>
                 <select
                   id="category-select"
                   className="category-select"
@@ -901,17 +1003,17 @@ function Index() {
                       ))}
                     </div>
 
-                      {/* Bottom Row: INR ₹ Price & Add to Bag Button on Right */}
-                      <div className="product-card-bottom">
-                        <p className="price">₹{product.price.toLocaleString('en-IN')}</p>
-                        <button
-                          className="product-add-button"
-                          aria-label={`Add ${product.name} to bag`}
-                          onClick={() => addToBag(product, selectedSwatch, false)}
-                        >
-                          <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Add to Bag
-                        </button>
-                      </div>
+                    {/* Bottom Row: INR ₹ Price & Add to Bag Button on Right */}
+                    <div className="product-card-bottom">
+                      <p className="price">₹{product.price.toLocaleString('en-IN')}</p>
+                      <button
+                        className="product-add-button"
+                        aria-label={`Add ${product.name} to bag`}
+                        onClick={() => addToBag(product, selectedSwatch, false)}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Add to Bag
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
@@ -964,7 +1066,6 @@ function Index() {
         {/* 6. WHY CHOOSE US / OUR SERVICES SECTION */}
         <section className="why-choose-section" id="why-choose-us">
           <div className="why-choose-header">
-            <p className="eyebrow" style={{ color: '#2563eb' }}>OUR SERVICES & GUARANTEE</p>
             <AnimatedHeading tag="h2" className="why-choose-title">
               Why Choose Sunshine Opticals?
             </AnimatedHeading>
@@ -1012,7 +1113,6 @@ function Index() {
         <section className="reviews-section" id="reviews-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow" style={{ color: '#2563eb' }}>Real businesses. Real stories.</p>
               <AnimatedHeading tag="h2">Customer Reviews</AnimatedHeading>
             </div>
             <Button
@@ -1055,7 +1155,7 @@ function Index() {
       </div>
 
       {/* 8. Newsletter Section */}
-      <section className="newsletter">
+      {/* <section className="newsletter">
         <div className="newsletter-inner">
           <div>
             <p className="eyebrow" style={{ color: '#60a5fa' }}>Stay in the loop</p>
@@ -1075,7 +1175,7 @@ function Index() {
           </form>
           <img src={sunglassesClassic} alt="" className="newsletter-glasses" />
         </div>
-      </section>
+      </section> */}
 
       {/* 9. LUXURY UPGRADED FOOTER */}
       <footer className="site-footer">
